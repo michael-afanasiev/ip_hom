@@ -5,6 +5,8 @@
 
 #include <limits>
 
+class exodusFile;
+
 using namespace Ipopt;
 class exoMod1D_Nlp: public TNLP
 {
@@ -57,12 +59,53 @@ public:
 					  const IpoptData *ip_data,
 					  IpoptCalculatedQuantities *ip_cq);
 
+	void
+	initFromExodus(exodusFile &exo);
+
 private:
 
+	static constexpr Number zero = 0;
 	static constexpr Number infty = std::numeric_limits<double>::max();
 
 	exoMod1D_Nlp(const exoMod1D_Nlp&);
 	exoMod1D_Nlp& operator=(const exoMod1D_Nlp&);
+
+	int mNvar;					// number of variables
+	int mNtyp;					// number of var types
+	int mNcon;					// number of constraints
+	int mNloc;					// number of unique locations
+	int mWinLength;				// window length of convolution
+	int mNjacNonZero;			// number of non-zero in jacobian
+
+	std::vector<double> mX;
+	std::vector<double> mY;
+
+	std::vector<double> mA;
+	std::vector<double> mC;
+	std::vector<double> mL;
+	std::vector<double> mF;
+	std::vector<double> mMu;
+	std::vector<double> mVph;
+	std::vector<double> mVpv;
+	std::vector<double> mVsv;
+	std::vector<double> mRho;
+	std::vector<double> mTheta;
+	std::vector<double> mLambda;
+
+	std::vector<double> mBigL;	
+	std::vector<double> mBigM;
+	std::vector<double> mBigR;
+	std::vector<double> mBigS;
+	std::vector<double> mBigT;
+
+	void
+	error(const int &e, const std::string &func);
+
+	Number
+	lowerBound(const int &i);
+
+	Number
+	upperBound(const int &i);
 
 };
 

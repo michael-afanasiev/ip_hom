@@ -29,6 +29,7 @@ class exodusFile
 	float mVers;
 
 	std::string mFname;
+	std::vector<int> mCon;
 	std::vector<double> mX;
 	std::vector<double> mY;
 	std::vector<std::string> mVarNames;
@@ -52,8 +53,11 @@ public:
 	readVariables();
 	void
 	readCoordinates();
+	void
+	readConnectivity();
 
 	// accessors.
+	std::vector<int> con() {return mCon;};
 	std::vector<double> getVar(std::string name);
 	std::vector<double> X() {return mX;};
 	std::vector<double> Y() {return mY;};

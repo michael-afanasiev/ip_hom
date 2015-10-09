@@ -11,6 +11,7 @@ SET(cxxbind_SRCS
   src/main.cpp
   src/exodusFile.cpp
   src/exoMod1D_nlp.cpp
+  src/model.cpp
   )
 
 ADD_EXECUTABLE(HomTest ${cxxbind_SRCS})

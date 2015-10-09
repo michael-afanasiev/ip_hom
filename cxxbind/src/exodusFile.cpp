@@ -23,6 +23,13 @@ exodusFile::initFromFile(std::string fname)
 }
 
 void
+exodusFile::readConnectivity()
+{
+	mCon.resize(mNelem*4);
+	ex_get_elem_conn(mIdExo, 1, mCon.data());
+}
+
+void
 exodusFile::readCoordinates()
 {
 	mX.resize(mNnode);
