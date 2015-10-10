@@ -107,6 +107,18 @@ private:
 	Number
 	upperBound(const int &i);
 
+	Number
+	constraint(const int &i, const int &ind);
+
+	std::vector<double>
+	calcGrad(const std::vector<double> &mu, const std::vector<double> &lambda,
+			 const std::vector<double> &theta, const int &var);
+
+	std::vector<double>
+	calcConstraint(const std::vector<double> &mu, 
+				   const std::vector<double> &lambda,
+			 	   const std::vector<double> &theta, const int &var);
+
 };
 
 #endif // __homOpt_exoMod1D_nlp_hpp__

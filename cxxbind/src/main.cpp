@@ -4,8 +4,13 @@
 int main(int argc, char const *argv[])
 {
 
+	if (argc < 2)
+	{
+		printError("Usage: HomTest [exodus_file]");
+	}
+
 	exodusFile exoFile;
-	exoFile.initFromFile("/Users/michaelafanasiev/Desktop/effective_media/layered_iteration_00.ex2");
+	exoFile.initFromFile(argv[1]);
 	exoFile.readVariables();
 	exoFile.readCoordinates();
 	exoFile.readConnectivity();

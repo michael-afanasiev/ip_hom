@@ -1,6 +1,7 @@
 #ifndef __homOpt_utilties_hpp__
 #define __homOpt_utilties_hpp__
 
+#include <cmath>
 #include <iostream>
 #include <algorithm>
 
@@ -10,15 +11,22 @@ printDebug(T msg)
 	std::cout << msg << std::endl;
 }
 
+template <typename T> void
+printError(T msg)
+{
+	std::cout << msg << std::endl;
+	exit(EXIT_FAILURE);
+}
+
 template <typename A, typename B> auto
-getIndForVal(A name, std::vector<B> vec)
+getIndForVal(A name, const std::vector<B> &vec)
 {
 	auto it=std::find(vec.begin(), vec.end(), name);
 	return it-vec.begin();
 }
 
 template <typename T> void
-printVector(std::vector<T> vec)
+printVector(const std::vector<T> &vec)
 {
 	for_each(vec.begin(), vec.end(), [] (T val)
 	{
@@ -27,7 +35,7 @@ printVector(std::vector<T> vec)
 }
 
 template <typename T> void
-printVectorRange(std::vector<T> vec, int s, int e)
+printVectorRange(const std::vector<T> &vec, int s, int e)
 {
 	for_each(vec.begin()+s, vec.begin()+e, [] (T val)
 	{
@@ -36,14 +44,14 @@ printVectorRange(std::vector<T> vec, int s, int e)
 }
 
 template <typename T> std::vector<T>
-getVectorSubset(std::vector<T> vec, int s, int e)
+getVectorSubset(const std::vector<T> &vec, int s, int e)
 {
 	std::vector<T> v(vec.begin()+s, vec.begin()+e);
 	return v;
 }
 
 template <typename T> int
-countConvolveHits(std::vector<T> vec, int winLength)
+countConvolveHits(const std::vector<T> &vec, int winLength)
 {
 	int hits = 0;
 	std::vector<double> win(winLength, 1/float(winLength));
@@ -62,7 +70,7 @@ countConvolveHits(std::vector<T> vec, int winLength)
 }
 
 template <typename T> std::vector<T>
-convolve(std::vector<T> vec, std::vector<T> win)
+convolve(const std::vector<T> &vec, const std::vector<T> &win)
 {
 	int half = win.size() / 2;
 	std::vector<T> out(vec.size());
@@ -77,6 +85,28 @@ convolve(std::vector<T> vec, std::vector<T> win)
 		}
 	}
 	return out;
+}
+
+template <typename T> auto
+l2norm(const std::vector<T> &vec1, const std::vector<T> &vec2)
+{
+	auto arg = 0;
+	for (auto i=0; i<vec1.size(); i++)
+	{
+		arg += (vec1[i] - vec2[i])*(vec1[i] - vec2[i]);
+	}
+	return (1.0/2.0) * arg;
+}
+
+template <typename T> auto
+vecDiff(const std::vector<T> &vec1, const std::vector<T> &vec2)
+{
+	std::vector<double> diff(vec1.size());
+	for (auto i=0; i<vec1.size(); i++)
+	{
+		diff[i] = vec1[i] - vec2[i];
+	}
+	return diff;
 }
 
 #endif //__homOpt_utilties_hpp__
