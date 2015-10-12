@@ -12,11 +12,18 @@ public:
 	model();
 	~model();
 
+	static bool
+	conSen(const int &constraint, const int & var);
+
 	static int
 	getWrap(const std::vector<double> &x, const std::vector<int> &con);
 
 	static int
 	getCtr(const std::vector<double> &x, const std::vector<int> &con);
+
+	static int
+	numJacNonZero(const std::vector<double> &tmp, const int &nCon,
+			      const int &nTyp, const int &nLoc, const int &winLength);
 
 	static std::vector<double>
 	calcA(const std::vector<double> &vph, const std::vector<double> &vpv);
@@ -49,6 +56,37 @@ public:
 
 	static std::vector<double>
 	calcBigT(const std::vector<double> &theta, const int winLength);
+
+	static std::vector<double>
+	dBigLdMu(const std::vector<double> &mu, const std::vector<double> &theta,
+			 const int &winLength);
+
+	static std::vector<double>
+	dBigMdMu(const std::vector<double> &mu, const std::vector<double> &theta,
+			 const int &winLength);
+
+	static std::vector<double>
+	dBigRdMu(const std::vector<double> &mu, const std::vector<double> &theta,
+			 const int &winLength);
+
+	static std::vector<double>
+	dBigSdMu(const std::vector<double> &mu, const std::vector<double> &theta,
+			 const int &winLength);
+
+	static std::vector<double>
+	dBigRdTheta(const std::vector<double> &mu, 
+			    const std::vector<double> &theta,
+			    const int &winLength);
+
+	static std::vector<double>
+	dBigSdTheta(const std::vector<double> &mu,
+				const std::vector<double> &theta,
+				const int &winLength);
+
+	static std::vector<double>
+	dBigTdTheta(const std::vector<double> &mu,
+			 	const std::vector<double> &theta,
+			 	const int &winLength);
 
 	static std::vector<double>
 	calcLambda(const std::vector<double> &vph, 

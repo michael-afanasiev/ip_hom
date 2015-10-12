@@ -27,7 +27,7 @@ exoMod1D_Nlp::get_nlp_info(Index &n, Index &m, Index &nnz_jac_g,
 	n = mNvar;
 
 	// each var has 5 constraints (L, M, R, S, T)
-	m = mNloc * mNcon;
+	m = mNvar * mNcon;
 	
 	// number of non-zeros in the jacobian (pre-calculated by 
 	// countConvolveHits)
@@ -45,7 +45,7 @@ exoMod1D_Nlp::get_bounds_info(Index n, Number *x_l, Number *x_u,
 {
 	// just assert to make sure values make sense
 	assert(n == mNvar);
-	assert(m == mNloc * mNcon);
+	assert(m == mNvar * mNcon);
 
 	for (Index i=0; i<mNtyp; i++)
 	{
@@ -128,7 +128,36 @@ bool
 exoMod1D_Nlp::eval_jac_g(Index n, const Number* x, bool new_x,
 			   		     Index m, Index nele_jac, Index* iRow, Index *jCol,
 			   		     Number* values)
-{return true;}
+{
+	if (values == NULL)
+	{
+		Index jInd = 0;
+		for (auto i=0; i<mNcon; i++)
+		{
+			for (auto j=0; j<mNtyp; j++)
+			{
+				if (! model::conSen(i, j)) continue;
+				for (auto k=0; k<mNloc; k++)
+				{
+					std::vector<int> cInd = convolveIndices(mMu, 
+														    mWinLength, 
+														    k);
+					for (auto l : cInd)
+					{
+						if (l >= 0 && l < mNloc)
+						{
+							iRow[jInd] = int (i * (mNtyp * mNloc) 
+								+ j * mNloc + k);
+							jCol[jInd] = int (j * mNloc + l);
+							jInd++;
+						}
+					}
+				}
+			}
+		}
+	}
+	return true;
+}
 
 bool
 exoMod1D_Nlp::eval_h(Index n, const Number* x, bool new_x,
@@ -198,7 +227,10 @@ void exoMod1D_Nlp::initFromExodus(exodusFile &exo)
 	mNloc = nWrap;
 	mNvar = mNloc * mNtyp;
 	mWinLength = winLength;
-	mNjacNonZero = countConvolveHits(mMu, winLength);
+	printDebug("HI!");
+	mNjacNonZero = model::numJacNonZero(mMu, mNcon, mNtyp, mNloc, mWinLength);
+	printDebug(mNjacNonZero);
+	printDebug("HI!");
 }
 
 Number
@@ -280,32 +312,10 @@ exoMod1D_Nlp::calcGrad(const std::vector<double> &mu,
 {	
 	if (var == 0)
 	{
-		// initialize vectors that will be needed
-		std::vector<double> win(mWinLength, 1/float(mWinLength));
-		std::vector<double> t00(mu.size());
-		std::vector<double> t01(mu.size());
-		std::vector<double> t1(mu.size(), 1.0);
-		std::vector<double> t2(mu.size());
-		std::vector<double> t3(mu.size());
-		for (auto i=0; i<t00.size(); i++)
-		{
-			t00[i] = 1 / mu[i];
-			t01[i] = 1 / (mu[i]*mu[i]);
-			t2[i] = theta[i] / (mu[i]*mu[i]);
-			t3[i] = theta[i];
-		}
-
-		// compute the 'homogenized derivatives'
-		t00 = convolve(t00, win);
-		t01 = convolve(t01, win);
-		t2 = convolve(t2, win);
-		t3 = convolve(t3, win);
-
-		// term 1 needs to be squared
-		for (auto i=0; i<t00.size(); i++)
-		{
-			t00[i] = 1 / t00[i]*t00[i];
-		}
+		std::vector<double> dLdMu = model::dBigLdMu(mu, theta, mWinLength);
+		std::vector<double> dMdMu = model::dBigMdMu(mu, theta, mWinLength);
+		std::vector<double> dRdMu = model::dBigRdMu(mu, theta, mWinLength);
+		std::vector<double> dSdMu = model::dBigSdMu(mu, theta, mWinLength);
 
 		// remember these linear terms are left over from the L2 norm
 		// TODO check if these need to be convolutions of the difference
@@ -326,10 +336,10 @@ exoMod1D_Nlp::calcGrad(const std::vector<double> &mu,
 
 		// sum up all values and return
 		std::vector<double> val(mu.size());
-		for (auto i=0; i<t00.size(); i++)
+		for (auto i=0; i<val.size(); i++)
 		{
-			val[i] = mul0[i] * t00[i]*t01[i] + mul1[i] - mul2[i] * t2[i] +
-				mul3[i] * t3[i];
+			val[i] = mul0[i] * dLdMu[i] + mul1[i] * dMdMu[i] 
+				- mul2[i] * dRdMu[i] + mul3[i] * dSdMu[i];
 		}
 
 		return val;
@@ -341,19 +351,12 @@ exoMod1D_Nlp::calcGrad(const std::vector<double> &mu,
 	}
 	else if (var == 2)
 	{
-		// initialize vectors that will be needed
-		std::vector<double> win(mWinLength, 1/float(mWinLength));
-		std::vector<double> t0(mu.size());
-		std::vector<double> t1(mu.size());
-		for (auto i=0; i<t0.size(); i++)
-		{
-			t0[i] = 1 / mu[i];
-			t1[i] = mu[i];
-		}
-
-		// compute the 'homogenized derivatives'
-		t0 = convolve(t0, win);
-		t1 = convolve(t1, win);
+		std::vector<double> dRdTheta = model::dBigRdTheta(mu, theta, 
+														  mWinLength);
+		std::vector<double> dSdTheta = model::dBigSdTheta(mu, theta,
+														  mWinLength);
+		std::vector<double> dTdTheta = model::dBigTdTheta(mu, theta,
+														  mWinLength);
 
 		// remember these linear terms are left over from the L2 norm
 		// TODO check if these need to be convolutions of the difference
@@ -370,9 +373,10 @@ exoMod1D_Nlp::calcGrad(const std::vector<double> &mu,
 														   mBigT);
 		// sum up all values and return
 		std::vector<double> val(mu.size());
-		for (auto i=0; i<t0.size(); i++)
+		for (auto i=0; i<val.size(); i++)
 		{
-			val[i] = mul0[i] * t0[i] + mul1[i] * t1[i] + mul2[i];
+			val[i] = mul0[i] * dRdTheta[i] + mul1[i] * dSdTheta[i]
+				+ mul2[i] * dTdTheta[i];
 		}
 		return val;
 	}

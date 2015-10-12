@@ -142,6 +142,7 @@ HS071_NLP::eval_jac_g(Index n, const Number* x, bool new_x,
 		jCol[6] = 2;
 		iRow[7] = 1;
 		jCol[7] = 3;
+		std::cout << jCol[0] << std::endl;
 	} 
 	else 
 	{

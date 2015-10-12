@@ -42,10 +42,7 @@ std::vector<double>
 model::calcA(const std::vector<double> &vph, const std::vector<double> &rho)
 {
 	std::vector<double> a(vph.size());
-	for (auto i=0; i<vph.size(); i++)
-	{
-		a[i] = rho[i] * vph[i]*vph[i];
-	}
+	for (auto i=0; i<vph.size(); i++) a[i] = rho[i] * vph[i]*vph[i];
 	return a;
 }
 
@@ -53,10 +50,7 @@ std::vector<double>
 model::calcC(const std::vector<double> &vpv, const std::vector<double> &rho)
 {
 	std::vector<double> c(vpv.size());
-	for (auto i=0; i<vpv.size(); i++)
-	{
-		c[i] = rho[i] * vpv[i]*vpv[i];
-	}
+	for (auto i=0; i<vpv.size(); i++) c[i] = rho[i] * vpv[i]*vpv[i];
 	return c;
 }
 
@@ -64,10 +58,7 @@ std::vector<double>
 model::calcL(const std::vector<double> &vsv, const std::vector<double> &rho)
 {
 	std::vector<double> l(vsv.size());
-	for (auto i=0; i<vsv.size(); i++)
-	{
-		l[i] = rho[i] * vsv[i]*vsv[i];
-	}
+	for (auto i=0; i<vsv.size(); i++) l[i] = rho[i] * vsv[i]*vsv[i];
 	return l;
 }
 
@@ -75,10 +66,7 @@ std::vector<double>
 model::calcF(const std::vector<double> &c, const std::vector<double> &l)
 {
 	std::vector<double> f(c.size());
-	for (auto i=0; i<c.size(); i++)
-	{
-		f[i] = c[i] - 2 * l[i];
-	}
+	for (auto i=0; i<c.size(); i++) f[i] = c[i] - 2 * l[i];
 	return f;
 }
 
@@ -86,10 +74,7 @@ std::vector<double>
 model::calcMu(const std::vector<double> &vsv, const std::vector<double> &rho)
 {
 	std::vector<double> mu(vsv.size());
-	for (auto i=0; i<vsv.size(); i++)
-	{
-		mu[i] = rho[i] * vsv[i]*vsv[i];
-	}
+	for (auto i=0; i<vsv.size(); i++) mu[i] = rho[i] * vsv[i]*vsv[i];
 	return mu;
 }
 
@@ -176,4 +161,120 @@ model::calcBigT(const std::vector<double> &theta, const int winLength)
 	std::vector<double> win(winLength, 1/float(winLength));
 	std::vector<double> prep = convolve(theta, win);
 	return prep;
+}
+
+std::vector<double>
+model::dBigLdMu(const std::vector<double> &mu, 
+				const std::vector<double> &theta, const int &winLength)
+{
+	std::vector<double> win(winLength, 1/float(winLength));
+	std::vector<double> res(mu.size());
+	std::vector<double> t0(mu.size());
+	std::vector<double> t1(mu.size());
+	for (auto i=0; i<t0.size(); i++)
+	{
+		t0[i] = 1 / mu[i];
+		t1[i] = 1 / (mu[i]*mu[i]);
+	}
+	t0 = convolve(t0, win);
+	t1 = convolve(t1, win);
+	for (auto i=0; i<t0.size(); i++) t0[i] = 1 / (t0[i]*t0[i]);
+	for (auto i=0; i<t0.size(); i++) res[i] = t0[i] * t1[i];
+	return res;
+}
+
+std::vector<double>
+model::dBigMdMu(const std::vector<double> &mu, 
+		   	    const std::vector<double> &theta, const int &winLength)
+{
+	std::vector<double> res(mu.size(), 1.0);
+	return res;
+}
+
+std::vector<double>
+model::dBigRdMu(const std::vector<double> &mu, 
+		        const std::vector<double> &theta, const int &winLength)
+{
+	std::vector<double> win(winLength, 1/float(winLength));
+	std::vector<double> res(mu.size());
+	for (auto i=0; i<res.size(); i++) res[i] = theta[i] / (mu[i]*mu[i]);
+	res = convolve(res, win);
+	return res;
+}
+
+std::vector<double>
+model::dBigSdMu(const std::vector<double> &mu,
+				const std::vector<double> &theta, const int &winLength)
+{
+	std::vector<double> win(winLength, 1/float(winLength));
+	std::vector<double> res = convolve(theta, win);
+	return res;
+}
+
+std::vector<double> 
+model::dBigRdTheta(const std::vector<double> &mu,
+			       const std::vector<double> &theta, const int &winLength)
+{
+	std::vector<double> win(winLength, 1/float(winLength));
+	std::vector<double> res(mu.size());
+	for (auto i = 0; i<res.size(); i++) res[i] = 1 / mu[i];
+	res = convolve(res, win);
+	return res;
+}
+
+std::vector<double> 
+model::dBigSdTheta(const std::vector<double> &mu,
+				   const std::vector<double> &theta, const int &winLength)
+{
+	std::vector<double> win(winLength, 1/float(winLength));
+	std::vector<double> res = convolve(mu, win);
+	return res;
+}
+
+std::vector<double>
+model::dBigTdTheta(const std::vector<double> &mu, 
+		   	       const std::vector<double> &theta, const int &winLength)
+{
+	std::vector<double> res(mu.size(), 1.0);
+	return res;
+}
+
+int
+model::numJacNonZero(const std::vector<double> &tmp, const int &nCon, 
+					 const int &nTyp, const int &nLoc, const int &winLength)
+{
+	auto jInd = 0;
+	for (auto i=0; i<nCon; i++)
+	{
+		for (auto j=0; j<nTyp; j++)
+		{
+			if (! model::conSen(i, j)) continue;
+			for (auto k=0; k<nLoc; k++)
+			{
+				std::vector<int> cInd = convolveIndices(tmp, winLength, k);
+				for (auto l : cInd)
+				{
+					if (l >= 0 && l<nLoc)
+					{
+						jInd++;
+					}
+				}
+			}
+		}
+	}
+	return jInd;
+}
+
+bool 
+model::conSen(const int &con, const int &var)
+{
+	if ((con == 0 || con == 1 || con == 2 || con == 3) && (var == 0)) 
+	{
+		return true;
+	}
+	if ((con == 2 || con == 3 || con == 4) && (var == 2))
+	{
+		return true;
+	}
+	return false;
 }

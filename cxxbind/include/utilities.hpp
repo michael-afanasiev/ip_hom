@@ -18,10 +18,11 @@ printError(T msg)
 	exit(EXIT_FAILURE);
 }
 
-template <typename A, typename B> auto
+template <typename A, typename B> int
 getIndForVal(A name, const std::vector<B> &vec)
 {
 	auto it=std::find(vec.begin(), vec.end(), name);
+	if (it == vec.end()) return -1;
 	return it-vec.begin();
 }
 
@@ -51,7 +52,7 @@ getVectorSubset(const std::vector<T> &vec, int s, int e)
 }
 
 template <typename T> int
-countConvolveHits(const std::vector<T> &vec, int winLength)
+countConvolveHits(const std::vector<T> &vec, const int winLength)
 {
 	int hits = 0;
 	std::vector<double> win(winLength, 1/float(winLength));
@@ -67,6 +68,20 @@ countConvolveHits(const std::vector<T> &vec, int winLength)
 		}
 	}
 	return hits;
+}
+
+template <typename T> std::vector<int>
+convolveIndices(const std::vector<T> &vec, const int &winLength, 
+			    const int &pInd)
+{
+	std::vector<int> index(winLength);
+	int half = index.size() / 2;
+	for (auto j=0; j<index.size(); j++)
+	{
+		int vecInd = pInd + (j - half);
+		index[j] = vecInd;
+	}
+	return index;
 }
 
 template <typename T> std::vector<T>
