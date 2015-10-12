@@ -25,6 +25,34 @@ public:
 	numJacNonZero(const std::vector<double> &tmp, const int &nCon,
 			      const int &nTyp, const int &nLoc, const int &winLength);
 
+	static double
+	dLdMu(const std::vector<double> &mu, const std::vector<double> &theta,
+		  const int &ind);
+
+	static double
+	dMdMu(const std::vector<double> &mu, const std::vector<double> &theta,
+		  const int &ind);
+
+	static double
+	dRdMu(const std::vector<double> &mu, const std::vector<double> &theta,
+		  const int &ind);
+
+	static double
+	dSdMu(const std::vector<double> &mu, const std::vector<double> &theta,
+		  const int &ind);
+
+	static double
+	dRdTheta(const std::vector<double> &mu, const std::vector<double> &theta,
+		  const int &ind);
+
+	static double
+	dSdTheta(const std::vector<double> &mu, const std::vector<double> &theta,
+		  const int &ind);
+
+	static double
+	dTdTheta(const std::vector<double> &mu, const std::vector<double> &theta,
+		  const int &ind);
+
 	static std::vector<double>
 	calcA(const std::vector<double> &vph, const std::vector<double> &vpv);
 

@@ -159,7 +159,7 @@ std::vector<double>
 model::calcBigT(const std::vector<double> &theta, const int winLength)
 {
 	std::vector<double> win(winLength, 1/float(winLength));
-	std::vector<double> prep = convolve(theta, win);
+std::vector<double> prep = convolve(theta, win);
 	return prep;
 }
 
@@ -237,6 +237,55 @@ model::dBigTdTheta(const std::vector<double> &mu,
 {
 	std::vector<double> res(mu.size(), 1.0);
 	return res;
+}
+
+double
+model::dLdMu(const std::vector<double> &mu, const std::vector<double> &theta,
+			 const int &ind)
+{
+	return (1 / ((1 / mu[ind])*(1 / mu[ind]))) * (1 / (mu[ind]*mu[ind]));
+}
+
+double
+model::dMdMu(const std::vector<double> &mu, const std::vector<double> &theta,
+			 const int &ind)
+{
+	return 1;
+}
+
+double
+model::dRdMu(const std::vector<double> &mu, const std::vector<double> &theta,
+			 const int &ind)
+{
+	return (-1) * (theta[ind] / (mu[ind]*mu[ind]));
+}
+
+double
+model::dSdMu(const std::vector<double> &mu, const std::vector<double> &theta,
+			 const int &ind)
+{
+	return theta[ind];
+}
+
+double
+model::dRdTheta(const std::vector<double> &mu, const std::vector<double> &theta,
+			 	const int &ind)
+{
+	return 1 / mu[ind];
+}
+
+double
+model::dSdTheta(const std::vector<double> &mu, const std::vector<double> &theta,
+			 	const int &ind)
+{
+	return mu[ind];
+}
+
+double
+model::dTdTheta(const std::vector<double> &mu, const std::vector<double> &theta,
+			 	const int &ind)
+{
+	return 1;
 }
 
 int

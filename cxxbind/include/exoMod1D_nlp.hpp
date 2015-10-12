@@ -77,6 +77,9 @@ private:
 	int mWinLength;				// window length of convolution
 	int mNjacNonZero;			// number of non-zero in jacobian
 
+	std::vector<int> mJcol;
+	std::vector<int> mIrow;
+
 	std::vector<double> mX;
 	std::vector<double> mY;
 
@@ -118,6 +121,13 @@ private:
 	calcConstraint(const std::vector<double> &mu, 
 				   const std::vector<double> &lambda,
 			 	   const std::vector<double> &theta, const int &var);
+
+	double
+	calcConstraintDeriv(const std::vector<double> &mu,
+						const std::vector<double> &lambda,
+						const std::vector<double> &theta,
+						const int &con,
+						const int &var);
 
 };
 

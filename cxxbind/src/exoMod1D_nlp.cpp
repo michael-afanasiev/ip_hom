@@ -26,12 +26,14 @@ exoMod1D_Nlp::get_nlp_info(Index &n, Index &m, Index &nnz_jac_g,
 	// problem has nWrap*3 variables (one whole column, and lambda, mu, theta)
 	n = mNvar;
 
-	// each var has 5 constraints (L, M, R, S, T)
-	m = mNvar * mNcon;
+	// each location has 5 constraints (L, M, R, S, T)
+	m = mNloc * mNcon;
 	
 	// number of non-zeros in the jacobian (pre-calculated by 
 	// countConvolveHits)
 	nnz_jac_g = mNjacNonZero;
+
+	nnz_h_lag = 0;
 
 	// use C style indexing (0-based)
 	index_style = TNLP::C_STYLE;
@@ -45,7 +47,7 @@ exoMod1D_Nlp::get_bounds_info(Index n, Number *x_l, Number *x_u,
 {
 	// just assert to make sure values make sense
 	assert(n == mNvar);
-	assert(m == mNvar * mNcon);
+	assert(m == mNloc * mNcon);
 
 	for (Index i=0; i<mNtyp; i++)
 	{
@@ -59,10 +61,11 @@ exoMod1D_Nlp::get_bounds_info(Index n, Number *x_l, Number *x_u,
 	{
 		for (Index j=0; j<mNloc; j++)
 		{
-			error(g_l[j+i*mNloc] = constraint(i, j) - 0.10*constraint(i,j), "constraint");
-			error(g_u[j+i*mNloc] = constraint(i, j) + 0.10*constraint(i,j), "constraint");
+			error(g_l[j+i*mNloc] = constraint(i, j) - 0.10*constraint(i, j), "constraint");
+			error(g_u[j+i*mNloc] = constraint(i, j) + 0.10*constraint(i, j), "constraint");
 		}
 	}
+	printDebug("CONSTRAINTS DONE");
 	return true;
 }
 
@@ -131,6 +134,7 @@ exoMod1D_Nlp::eval_jac_g(Index n, const Number* x, bool new_x,
 {
 	if (values == NULL)
 	{
+		printDebug("DETERMINING JACOBIAN");
 		Index jInd = 0;
 		for (auto i=0; i<mNcon; i++)
 		{
@@ -146,14 +150,28 @@ exoMod1D_Nlp::eval_jac_g(Index n, const Number* x, bool new_x,
 					{
 						if (l >= 0 && l < mNloc)
 						{
-							iRow[jInd] = int (i * (mNtyp * mNloc) 
-								+ j * mNloc + k);
-							jCol[jInd] = int (j * mNloc + l);
+							iRow[jInd] = i * (mNloc) + k;
+							jCol[jInd] = j * mNloc + l;
+							mIrow[jInd] = i * (mNloc) + k;
+							mJcol[jInd] = j * mNloc + l;
+							// printDebug(iRow[jInd]);
+							// printDebug(jCol[jInd]);
 							jInd++;
 						}
 					}
 				}
 			}
+		}
+	}
+	else
+	{
+		std::vector<double> mu(x, x+mNloc);
+		std::vector<double> lambda(x+mNloc, x+2*mNloc);
+		std::vector<double> theta(x+2*mNloc, x+3*mNloc);
+		for (Index i=0; i<mNjacNonZero; i++)
+		{
+			values[i] = (1 / float(mWinLength)) * 
+				calcConstraintDeriv(mu, lambda, theta, mIrow[i], mJcol[i]);
 		}
 	}
 	return true;
@@ -164,7 +182,10 @@ exoMod1D_Nlp::eval_h(Index n, const Number* x, bool new_x,
 		   		     Number obj_factor, Index m, const Number* lambda,
 		   		     bool new_lambda, Index nele_hess, Index* iRow,
 		   		     Index* jCol, Number* values)
-{return false;}
+{
+	printDebug("HESSIAN");
+	return false;
+}
 
 void exoMod1D_Nlp::finalize_solution(SolverReturn status,
 					  			     Index n, const Number* x, const Number *z_L,
@@ -172,7 +193,36 @@ void exoMod1D_Nlp::finalize_solution(SolverReturn status,
 					  			     const Number *lambda, Number obj_value,
 					  			     const IpoptData *ip_data,
 					  			     IpoptCalculatedQuantities *ip_cq)
-{}
+{
+	std::cout << std::endl << std::endl 
+	<< "Solution of the primal variables, x" << std::endl;
+	for (Index i=0; i<n; i++)
+	{
+		std::cout << "x[" <<i << "] = " << x[i] << std::endl;
+	}
+
+	std::cout << std::endl << std::endl
+	<< "Solution of the bound multipliers, z_L and z_U" << std::endl;
+	for (Index i=0; i<n; i++)
+	{
+		std::cout << "z_L[" << i << "] = " << z_L[i] << std::endl;
+	}
+	for (Index i=0; i<n; i++)
+	{
+		std::cout << "z_U[" << i << "] = " << z_L[i] << std::endl;
+	}
+
+	std::cout << std::endl << std::endl
+	<< "Objective Value" << std::endl;
+	std::cout << "f(x*) = " << obj_value << std::endl;
+
+	std::cout << std::endl 
+	<< "Final value of the constraints:" << std::endl;
+	for (Index i=0; i<m; i++)
+	{
+		std::cout << "g(" << i << ") = " << g[i] << std::endl;
+	}
+}
 
 void exoMod1D_Nlp::initFromExodus(exodusFile &exo)
 {
@@ -227,10 +277,9 @@ void exoMod1D_Nlp::initFromExodus(exodusFile &exo)
 	mNloc = nWrap;
 	mNvar = mNloc * mNtyp;
 	mWinLength = winLength;
-	printDebug("HI!");
 	mNjacNonZero = model::numJacNonZero(mMu, mNcon, mNtyp, mNloc, mWinLength);
-	printDebug(mNjacNonZero);
-	printDebug("HI!");
+	mJcol.resize(mNjacNonZero);
+	mIrow.resize(mNjacNonZero);
 }
 
 Number
@@ -412,6 +461,60 @@ exoMod1D_Nlp::calcConstraint(const std::vector<double> &mu,
 	}
 	return std::vector<double> (mu.size(), -1);
 
+}
+
+double
+exoMod1D_Nlp::calcConstraintDeriv(const std::vector<double> &mu,
+							 	  const std::vector<double> &lambda,
+							 	  const std::vector<double> &theta,
+							 	  const int &con, const int &ind)
+{
+	int var;
+	int locCon;
+	for (auto i=0; i<mNtyp; i++)
+	{
+		if ((ind >= i*mNloc) && (ind < (i+1)*mNloc)) var = i;
+	}
+	for (auto i=0; i<mNcon; i++)
+	{
+		if ((con >= i*mNloc) && (i < (i+1)*mNloc)) locCon = i;
+	}
+	int locInd = ind % mNloc;
+	if ((locCon == 0) && (var == 0))
+	{
+		return model::dLdMu(mu, theta, locInd);
+	}
+	else if ((locCon == 1) && (var == 0))
+	{
+		return model::dMdMu(mu, theta, locInd);
+	}
+	else if ((locCon == 2) && (var == 0))
+	{
+		return model::dRdMu(mu, theta, locInd);
+	}
+	else if ((locCon == 2) && (var == 2))
+	{
+		return model::dRdTheta(mu, theta, locInd);
+	}
+	else if ((locCon == 3) && (var == 0))
+	{
+		return model::dSdMu(mu, theta, locInd);
+	}
+	else if ((locCon == 3) && (var == 2))
+	{
+		return model::dSdTheta(mu, theta, locInd);
+	}
+	else if ((locCon == 4) && (var == 2))
+	{
+		return model::dTdTheta(mu, theta, locInd);
+	}
+	else
+	{
+		printDebug("ERROR!");
+		exit(0);
+		// return std::vector<double> err(mu.size(), -1);
+	}
+	return -1;
 }
 
 void

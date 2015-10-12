@@ -20,16 +20,18 @@ int main(int argc, char const *argv[])
 
 	SmartPtr<IpoptApplication> app = IpoptApplicationFactory();
 	app->RethrowNonIpoptException(true);
-	app->Options()->SetNumericValue("tol", 1e-7);
+	app->Options()->SetNumericValue("tol", 1);
 	app->Options()->SetStringValue("mu_strategy", "adaptive");
 	app->Options()->SetStringValue("output_file", "ipopt.out");
 	app->Options()->SetStringValue("hessian_approximation", "limited-memory");
+	app->Options()->SetNumericValue("derivative_test_perturbation", 1e-3);
+	app->Options()->SetStringValue("derivative_test", "first-order");
 
 	ApplicationReturnStatus status;
 	status = app->Initialize();
 	if (status != Solve_Succeeded)
 	{
-		std::cout << std::endl << std::endl 
+		std::cout << std::endl << std::endl
 		<< "*** Error during initialization!" << std::endl;
 		return (int) status;
 	}
