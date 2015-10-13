@@ -17,6 +17,8 @@ main(int argv, char* argc[])
 	app->Options()->SetStringValue("mu_strategy", "adaptive");
 	app->Options()->SetStringValue("output_file", "ipopt.out");
 	app->Options()->SetStringValue("hessian_approximation", "limited-memory");
+	// app->Options()->SetStringValue("derivative_test", "first-order");
+	// app->Options()->SetNumericValue("derivative_test_perturbation", 1 * 10e-15);
 
 	ApplicationReturnStatus status;
 	status = app->Initialize();

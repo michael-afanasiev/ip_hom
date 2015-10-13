@@ -105,12 +105,39 @@ convolve(const std::vector<T> &vec, const std::vector<T> &win)
 template <typename T> auto
 l2norm(const std::vector<T> &vec1, const std::vector<T> &vec2)
 {
-	auto arg = 0;
+	double arg = 0;
 	for (auto i=0; i<vec1.size(); i++)
 	{
 		arg += (vec1[i] - vec2[i])*(vec1[i] - vec2[i]);
 	}
 	return (1.0/2.0) * arg;
+}
+
+template <typename T> auto
+vecMulConst(const std::vector<T> &vec1, const T &con)
+{
+	std::vector<double> out(vec1.size());
+	for (auto i=0; i<out.size(); i++)
+	{
+		out[i] = vec1[i] * con;
+	}
+	return out;
+}
+
+template <typename T> auto
+vecWinDiff(const std::vector<T> &vec1, const std::vector<T> &vec2,
+		   const std::vector<T> &win, const int &ind)
+{
+	int half = win.size() / 2;
+	double out = 0.0;
+	for (auto j=0; j<win.size(); j++)
+	{
+		int vecInd = ind+1 + (j - half);
+		if (vecInd < 0) vecInd = 0;
+		if (vecInd >= vec1.size()) vecInd = vec1.size() - 1;
+		out += (vec1[vecInd] - vec2[vecInd]) * win[j];
+	}
+	return out;
 }
 
 template <typename T> auto

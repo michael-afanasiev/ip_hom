@@ -113,9 +113,9 @@ private:
 	Number
 	constraint(const int &i, const int &ind);
 
-	std::vector<double>
+	Number
 	calcGrad(const std::vector<double> &mu, const std::vector<double> &lambda,
-			 const std::vector<double> &theta, const int &var);
+			 const std::vector<double> &theta, const int &var, const int &ind);
 
 	std::vector<double>
 	calcConstraint(const std::vector<double> &mu, 

@@ -77,9 +77,9 @@ HS071_NLP::get_starting_point(Index n, bool init_x, Number* x,
 
 	// initialize to some starting point.
 	x[0] = 1.0;
-	x[1] = 5.0;
-	x[2] = 5.0;
-	x[3] = 1.0;
+	x[1] = 4.743;
+	x[2] = 3.82115;
+	x[3] = 1.37941;
 
 	return true;
 }
@@ -89,6 +89,7 @@ HS071_NLP::eval_f(Index n, const Number* x, bool new_x, Number& obj_value)
 {
 	assert(n == 4);
 
+	std::cout << x[1] << std::endl;
 	// evaulate the objective function
 	obj_value = x[0] * x[3] * (x[0] + x[1] + x[2]) + x[2];
 	return true;

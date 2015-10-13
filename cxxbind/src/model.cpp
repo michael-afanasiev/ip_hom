@@ -159,7 +159,7 @@ std::vector<double>
 model::calcBigT(const std::vector<double> &theta, const int winLength)
 {
 	std::vector<double> win(winLength, 1/float(winLength));
-std::vector<double> prep = convolve(theta, win);
+	std::vector<double> prep = convolve(theta, win);
 	return prep;
 }
 
