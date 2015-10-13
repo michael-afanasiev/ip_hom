@@ -23,6 +23,7 @@ exoMod1D_Nlp::get_nlp_info(Index &n, Index &m, Index &nnz_jac_g,
 						   Index &nnz_h_lag, IndexStyleEnum &index_style)
 {
 
+	// 741 in total
 	// problem has nWrap*3 variables (one whole column, and lambda, mu, theta)
 	n = mNvar;
 
@@ -134,7 +135,6 @@ exoMod1D_Nlp::eval_jac_g(Index n, const Number* x, bool new_x,
 {
 	if (values == NULL)
 	{
-		printDebug("DETERMINING JACOBIAN");
 		Index jInd = 0;
 		for (auto i=0; i<mNcon; i++)
 		{
@@ -154,8 +154,6 @@ exoMod1D_Nlp::eval_jac_g(Index n, const Number* x, bool new_x,
 							jCol[jInd] = j * mNloc + l;
 							mIrow[jInd] = i * (mNloc) + k;
 							mJcol[jInd] = j * mNloc + l;
-							// printDebug(iRow[jInd]);
-							// printDebug(jCol[jInd]);
 							jInd++;
 						}
 					}

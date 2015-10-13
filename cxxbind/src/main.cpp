@@ -24,8 +24,10 @@ int main(int argc, char const *argv[])
 	app->Options()->SetStringValue("mu_strategy", "adaptive");
 	app->Options()->SetStringValue("output_file", "ipopt.out");
 	app->Options()->SetStringValue("hessian_approximation", "limited-memory");
-	app->Options()->SetNumericValue("derivative_test_perturbation", 1e-3);
+	// app->Options()->SetNumericValue("derivative_test_perturbation", 1e-3);
 	app->Options()->SetStringValue("derivative_test", "first-order");
+	// app->Options()->SetNumericValue("derivative_test_tol", 1e-8);
+	// app->Options()->SetStringValue("derivative_test_print_all", "yes");
 
 	ApplicationReturnStatus status;
 	status = app->Initialize();
