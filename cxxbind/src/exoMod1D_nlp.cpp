@@ -385,23 +385,23 @@ exoMod1D_Nlp::calcConstraint(const std::vector<double> &mu,
 	if (var == 0)
 	{
 		std::vector<double> res(mu.size(), 1.0);
-		return res;//model::calcBigL(mu, mWinLength);
+		return model::calcBigL(mu, mWinLength);
 	}
 	else if (var == 1)
 	{
 		std::vector<double> res(mu.size(), 1.0);
-		return res;//model::calcBigM(mu, mWinLength);
+		return model::calcBigM(mu, mWinLength);
 	}
 	else if (var == 2)
 	{
 			std::vector<double> res(mu.size(), 1.0);
 
-		return res;//model::calcBigR(mu, theta, mWinLength);
+		return model::calcBigR(mu, theta, mWinLength);
 	}
 	else if (var == 3)
 	{
 		std::vector<double> res(mu.size(), 1.0);
-		return res;//model::calcBigS(mu, theta, mWinLength);
+		return model::calcBigS(mu, theta, mWinLength);
 	}
 	else if (var == 4)
 	{
