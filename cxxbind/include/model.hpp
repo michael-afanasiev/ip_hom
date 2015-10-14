@@ -97,8 +97,11 @@ public:
 	dBigRdMu(const std::vector<double> &mu, const std::vector<double> &theta,
 			 const int &winLength);
 
-	static std::vector<double>
-	dBigSdMu(const std::vector<double> &mu, const std::vector<double> &theta,
+	static double
+	dBigSdMu(const std::vector<double> &mu,
+			 const std::vector<double> &theta,
+			 const std::vector<double> &bigS,
+			 const int &ind,
 			 const int &winLength);
 
 	static std::vector<double>
@@ -106,9 +109,11 @@ public:
 			    const std::vector<double> &theta,
 			    const int &winLength);
 
-	static std::vector<double>
+	static double
 	dBigSdTheta(const std::vector<double> &mu,
 				const std::vector<double> &theta,
+				const std::vector<double> &bigS,
+				const int &ind,
 				const int &winLength);
 
 	static std::vector<double>

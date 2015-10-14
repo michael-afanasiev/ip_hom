@@ -126,13 +126,13 @@ vecMulConst(const std::vector<T> &vec1, const T &con)
 
 template <typename T> auto
 vecWinDiff(const std::vector<T> &vec1, const std::vector<T> &vec2,
-		   const std::vector<T> &win, const int &ind)
+		   const std::vector<T> &win,  const int &ind)
 {
 	int half = win.size() / 2;
 	double out = 0.0;
 	for (auto j=0; j<win.size(); j++)
 	{
-		int vecInd = ind+1 + (j - half);
+		int vecInd = ind + 1 + (j - half);
 		if (vecInd < 0) vecInd = 0;
 		if (vecInd >= vec1.size()) vecInd = vec1.size() - 1;
 		out += (vec1[vecInd] - vec2[vecInd]) * win[j];
