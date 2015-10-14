@@ -88,10 +88,10 @@ exoMod1D_Nlp::eval_f(Index n, const Number* x, bool new_x, Number& obj_value)
 	std::vector<double> theta(x+2*mNloc, x+3*mNloc);
 	obj_value = 0;
 	// obj_value += l2norm(model::calcBigL(mu, mWinLength), mBigL);
-	// obj_value += l2norm(model::calcBigM(mu, mWinLength), mBigM);
-	// obj_value += l2norm(model::calcBigR(mu, theta, mWinLength), mBigR);
+	obj_value += l2norm(model::calcBigM(mu, mWinLength), mBigM);
+	obj_value += l2norm(model::calcBigR(mu, theta, mWinLength), mBigR);
 	obj_value += l2norm(model::calcBigS(mu, theta, mWinLength), mBigS);
-	// obj_value += l2norm(model::calcBigT(theta, mWinLength), mBigT);
+	obj_value += l2norm(model::calcBigT(theta, mWinLength), mBigT);
 	return true;
 }	
 
@@ -135,7 +135,7 @@ exoMod1D_Nlp::eval_jac_g(Index n, const Number* x, bool new_x,
 	if (values == NULL)
 	{
 		Index jInd = 0;
-		for (auto i=0; i<mNcon; i++)
+		for (auto i=1; i<mNcon; i++)
 		{
 			for (auto j=0; j<mNtyp; j++)
 			{
@@ -304,7 +304,7 @@ exoMod1D_Nlp::upperBound(const int &i)
 {
 	if (i == 0)
 	{
-		return 1000;
+		return 15;
 	}
 	else if (i == 1)
 	{
@@ -357,32 +357,10 @@ exoMod1D_Nlp::calcGrad(const std::vector<double> &mu,
 {	
 	if (var == 0)
 	{
-		std::vector<double> win(mWinLength, 1/float(mWinLength));
-		std::vector<double> dLdMu = model::dBigLdMu(mu, theta, mWinLength);
-		std::vector<double> dMdMu = model::dBigMdMu(mu, theta, mWinLength);
-		std::vector<double> dRdMu = model::dBigRdMu(mu, theta, mWinLength);
-
-		std::vector<double> mul0 = vecDiff(model::calcBigL(mu, 
-														   mWinLength), 
-							   							   mBigL);
-		// std::vector<double> mul1 = vecDiff(model::calcBigM(mu, 
-		// 												   mWinLength),
-		// 												   mBigM);
-		std::vector<double> mul2 = vecDiff(model::calcBigR(mu,
-														   theta,
-														   mWinLength),
-														   mBigR);
-		// std::vector<double> mul3 = vecDiff(model::calcBigS(mu,
-		// 												   theta,
-		// 												   mWinLength),
-		// 												   mBigS);
-
-		double mul1 = vecWinDiff(model::calcBigM(mu, mWinLength), 
-								 mBigM, win, ind);
-		double mul3 = vecWinDiff(model::calcBigS(mu, theta, mWinLength),
-							     mBigS, win, ind);
-
-		double dSdMu = model::dBigSdMu(mu, theta, mBigS, ind, mWinLength);
+		double dMdM = model::dBigMdMu(mu, theta, mBigM, ind, mWinLength);
+		double dRdM = model::dBigRdMu(mu, theta, mBigR, ind, mWinLength);
+		double dSdM = model::dBigSdMu(mu, theta, mBigS, ind, mWinLength);
+		return dSdM + dRdM + dMdM;
 	}
 	else if (var == 1)
 	{
@@ -390,47 +368,12 @@ exoMod1D_Nlp::calcGrad(const std::vector<double> &mu,
 	}
 	else if (var == 2)
 	{
-		std::vector<double> win(mWinLength, 1/float(mWinLength));
-		std::vector<double> dRdTheta = model::dBigRdTheta(mu, theta, 
-														  mWinLength);
-		// std::vector<double> dTdTheta = model::dBigTdTheta(mu, theta,
-		// 												  mWinLength);
-
-		// remember these linear terms are left over from the L2 norm
-		// TODO check if these need to be convolutions of the difference
-		std::vector<double> mul0 = vecDiff(model::calcBigR(mu,
-														   theta,
-														   mWinLength),
-		 												   mBigR);
-		std::vector<double> mul1 = vecDiff(model::calcBigS(mu,
-														   theta,
-														   mWinLength),
-														   mBigS);
-		double mul2 = vecWinDiff(model::calcBigT(theta,
-										  mWinLength),
-										  mBigT, win, ind);
-
-		double dSdTheta = model::dBigSdTheta(mu, theta, mBigS, ind, 
-											 mWinLength);
-
-		// printDebug(mul2);
-
-		// printDebug("VAR 2");
-		// printDebug(model::calcBigT(theta, mWinLength)[10]);
-		// printDebug(mBigT[10]);
-		// std::cin.get();
-		// sum up all values and return
-
-		// for (auto i=0; i<val.size(); i++)
-		// {
-		// 	// val[i] = mul0[i] * dRdTheta[i] + mul1[i] * dSdTheta[i]
-		// 	// 	+ mul2[i] * dTdTheta[i];
-		// 	val[i] = (1/float(mWinLength)) * diff;//mul2[i];// * (1/float(mWinLength));// dTdTheta[i];
-		// }
-		return dSdTheta;
+		double dRdT = model::dBigRdTheta(mu, theta, mBigR, ind, mWinLength);
+		double dTdT = model::dBigTdTheta(mu, theta, mBigT, ind, mWinLength);
+		double dSdT = model::dBigSdTheta(mu, theta, mBigS, ind, mWinLength);
+		return dSdT+ dTdT + dRdT;
 	}
-	// std::vector<double> err(mu.size(), -1);
-	// return err;
+	return - 1;
 }
 
 std::vector<double>
@@ -441,22 +384,28 @@ exoMod1D_Nlp::calcConstraint(const std::vector<double> &mu,
 {
 	if (var == 0)
 	{
-		return model::calcBigL(mu, mWinLength);
+		std::vector<double> res(mu.size(), 1.0);
+		return res;//model::calcBigL(mu, mWinLength);
 	}
 	else if (var == 1)
 	{
-		return model::calcBigM(mu, mWinLength);
+		std::vector<double> res(mu.size(), 1.0);
+		return res;//model::calcBigM(mu, mWinLength);
 	}
 	else if (var == 2)
 	{
-		return model::calcBigR(mu, theta, mWinLength);
+			std::vector<double> res(mu.size(), 1.0);
+
+		return res;//model::calcBigR(mu, theta, mWinLength);
 	}
 	else if (var == 3)
 	{
-		return model::calcBigS(mu, theta, mWinLength);
+		std::vector<double> res(mu.size(), 1.0);
+		return res;//model::calcBigS(mu, theta, mWinLength);
 	}
 	else if (var == 4)
 	{
+		std::vector<double> res(mu.size(), 1.0);
 		return model::calcBigT(theta, mWinLength);
 	}
 	return std::vector<double> (mu.size(), -1);
@@ -512,7 +461,6 @@ exoMod1D_Nlp::calcConstraintDeriv(const std::vector<double> &mu,
 	{
 		printDebug("ERROR!");
 		exit(0);
-		// return std::vector<double> err(mu.size(), -1);
 	}
 	return -1;
 }

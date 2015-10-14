@@ -89,12 +89,18 @@ public:
 	dBigLdMu(const std::vector<double> &mu, const std::vector<double> &theta,
 			 const int &winLength);
 
-	static std::vector<double>
-	dBigMdMu(const std::vector<double> &mu, const std::vector<double> &theta,
+	static double
+	dBigMdMu(const std::vector<double> &mu,
+			 const std::vector<double> &theta,
+			 const std::vector<double> &bigM,
+			 const int &ind,
 			 const int &winLength);
 
-	static std::vector<double>
-	dBigRdMu(const std::vector<double> &mu, const std::vector<double> &theta,
+	static double
+	dBigRdMu(const std::vector<double> &mu,
+			 const std::vector<double> &theta, 
+			 const std::vector<double> &bigR,
+			 const int &ind,
 			 const int &winLength);
 
 	static double
@@ -104,10 +110,12 @@ public:
 			 const int &ind,
 			 const int &winLength);
 
-	static std::vector<double>
-	dBigRdTheta(const std::vector<double> &mu, 
-			    const std::vector<double> &theta,
-			    const int &winLength);
+	static double
+	dBigRdTheta(const std::vector<double> &mu,
+				const std::vector<double> &theta, 
+				const std::vector<double> &bigR,
+				const int &ind,
+				const int &winLength);
 
 	static double
 	dBigSdTheta(const std::vector<double> &mu,
@@ -116,10 +124,12 @@ public:
 				const int &ind,
 				const int &winLength);
 
-	static std::vector<double>
+	static double 
 	dBigTdTheta(const std::vector<double> &mu,
-			 	const std::vector<double> &theta,
-			 	const int &winLength);
+				 const std::vector<double> &theta, 
+				 const std::vector<double> &bigT,
+				 const int &ind,
+				 const int &winLength);
 
 	static std::vector<double>
 	calcLambda(const std::vector<double> &vph, 

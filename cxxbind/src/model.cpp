@@ -183,23 +183,46 @@ model::dBigLdMu(const std::vector<double> &mu,
 	return res;
 }
 
-std::vector<double>
-model::dBigMdMu(const std::vector<double> &mu, 
-		   	    const std::vector<double> &theta, const int &winLength)
+double 
+model::dBigMdMu(const std::vector<double> &mu,
+				const std::vector<double> &theta, 
+				const std::vector<double> &bigM,
+				const int &ind,
+				const int &winLength)
 {
-	std::vector<double> res(mu.size(), 1.0);
-	return res;
+	double out = 0.0;
+	int half = winLength / 2;
+	std::vector<double> win(winLength, 1/float(winLength));
+	std::vector<double> bigMtrial = calcBigM(mu, winLength);
+	for (auto j=0; j<win.size(); j++)
+	{
+		int vecInd = ind + 1 + (j - half);
+		if (vecInd < 0) vecInd = 0;
+		if (vecInd >= mu.size()) vecInd = mu.size() - 1;
+		out += (bigMtrial[vecInd] - bigM[vecInd]) * win[j];
+	}
+	return out;
 }
 
-std::vector<double>
-model::dBigRdMu(const std::vector<double> &mu, 
-		        const std::vector<double> &theta, const int &winLength)
+double 
+model::dBigRdMu(const std::vector<double> &mu,
+				const std::vector<double> &theta, 
+				const std::vector<double> &bigR,
+				const int &ind,
+				const int &winLength)
 {
+	double out = 0.0;
+	int half = winLength / 2;
 	std::vector<double> win(winLength, 1/float(winLength));
-	std::vector<double> res(mu.size());
-	for (auto i=0; i<res.size(); i++) res[i] = theta[i] / (mu[i]*mu[i]);
-	res = convolve(res, win);
-	return res;
+	std::vector<double> bigRtrial = calcBigR(mu, theta, winLength);
+	for (auto j=0; j<win.size(); j++)
+	{
+		int vecInd = ind + 1 + (j - half);
+		if (vecInd < 0) vecInd = 0;
+		if (vecInd >= mu.size()) vecInd = mu.size() - 1;
+		out += (bigRtrial[vecInd] - bigR[vecInd]) * (1 * theta[j]);
+	}
+	return out;
 }
 
 double 
@@ -224,15 +247,25 @@ model::dBigSdMu(const std::vector<double> &mu,
 	return out;
 }
 
-std::vector<double> 
+double 
 model::dBigRdTheta(const std::vector<double> &mu,
-			       const std::vector<double> &theta, const int &winLength)
+				   const std::vector<double> &theta, 
+				   const std::vector<double> &bigR,
+				   const int &ind,
+				   const int &winLength)
 {
+	double out = 0.0;
+	int half = winLength / 2;
 	std::vector<double> win(winLength, 1/float(winLength));
-	std::vector<double> res(mu.size());
-	for (auto i=0; i<res.size(); i++) res[i] = 1 / mu[i];
-	res = convolve(res, win);
-	return res;
+	std::vector<double> bigRtrial = calcBigR(mu, theta, winLength);
+	for (auto j=0; j<win.size(); j++)
+	{
+		int vecInd = ind + 1 + (j - half);
+		if (vecInd < 0) vecInd = 0;
+		if (vecInd >= mu.size()) vecInd = mu.size() - 1;
+		out += (bigRtrial[vecInd] - bigR[vecInd]) * (1 / mu[j]);
+	}
+	return out;
 }
 
 double 
@@ -242,11 +275,10 @@ model::dBigSdTheta(const std::vector<double> &mu,
 				   const int &ind,
 				   const int &winLength)
 {
+	double out = 0.0;
+	int half = winLength / 2;
 	std::vector<double> win(winLength, 1/float(winLength));
 	std::vector<double> bigStrial = calcBigS(mu, theta, winLength);
-
-	int half = win.size() / 2;
-	double out = 0.0;
 	for (auto j=0; j<win.size(); j++)
 	{
 		int vecInd = ind + 1 + (j - half);
@@ -257,12 +289,25 @@ model::dBigSdTheta(const std::vector<double> &mu,
 	return out;
 }
 
-std::vector<double>
-model::dBigTdTheta(const std::vector<double> &mu, 
-		   	       const std::vector<double> &theta, const int &winLength)
+double 
+model::dBigTdTheta(const std::vector<double> &mu,
+				   const std::vector<double> &theta, 
+				   const std::vector<double> &bigT,
+				   const int &ind,
+				   const int &winLength)
 {
-	std::vector<double> res(mu.size(), 1.0);
-	return res;
+	double out = 0.0;
+	int half = winLength / 2;
+	std::vector<double> win(winLength, 1/float(winLength));
+	std::vector<double> bigTtrial = calcBigT(theta, winLength);
+	for (auto j=0; j<win.size(); j++)
+	{
+		int vecInd = ind + 1 + (j - half);
+		if (vecInd < 0) vecInd = 0;
+		if (vecInd >= mu.size()) vecInd = mu.size() - 1;
+		out += (bigTtrial[vecInd] - bigT[vecInd]) * win[j];
+	}
+	return out;
 }
 
 double
