@@ -70,6 +70,7 @@ private:
 	exoMod1D_Nlp(const exoMod1D_Nlp&);
 	exoMod1D_Nlp& operator=(const exoMod1D_Nlp&);
 
+	int mItr;					// internal iteration count
 	int mNvar;					// number of variables
 	int mNtyp;					// number of var types
 	int mNcon;					// number of constraints
@@ -100,6 +101,12 @@ private:
 	std::vector<double> mBigR;
 	std::vector<double> mBigS;
 	std::vector<double> mBigT;
+
+	std::vector<double> sMu;
+	std::vector<double> sTheta;
+
+	void
+	writeParam(const std::vector<double> &par, const std::string fname);
 
 	void
 	error(const int &e, const std::string &func);

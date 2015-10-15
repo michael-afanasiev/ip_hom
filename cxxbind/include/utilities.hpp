@@ -1,7 +1,11 @@
 #ifndef __homOpt_utilties_hpp__
 #define __homOpt_utilties_hpp__
 
+#include <time.h>
 #include <cmath>
+#include <random>
+#include <iomanip>
+#include <sstream>
 #include <iostream>
 #include <algorithm>
 
@@ -149,6 +153,42 @@ vecDiff(const std::vector<T> &vec1, const std::vector<T> &vec2)
 		diff[i] = vec1[i] - vec2[i];
 	}
 	return diff;
+}
+
+template <typename T> auto
+vecPerturb(const std::vector<T> &vec, const double maxP)
+{
+	srand(time(NULL));
+	std::vector<T> out(vec.size());
+	for (auto i=0; i<out.size(); i++)
+	{
+		int sign = 1;
+		if ((rand() / double(RAND_MAX)) > 0.5) sign = -1;
+		double prt = rand() / double(RAND_MAX);
+		out[i] = vec[i] + sign * prt * maxP;
+	}
+	return out;
+}
+
+template <typename T> auto
+vecAvg(const std::vector<T> &vec)
+{
+	T avg = 0;
+	for (auto i=0; i<vec.size(); i++)
+	{
+		avg += vec[i] / double(vec.size());
+	}
+	std::vector<T> out(vec.size(), avg);
+
+	return out;
+}
+
+template <typename T> auto
+numToStr(T num)
+{
+	std::ostringstream ss;
+	ss << std::setw(4) << std::setfill('0') << num;
+	return ss.str();
 }
 
 #endif //__homOpt_utilties_hpp__

@@ -39,6 +39,9 @@ exoMod1D_Nlp::get_nlp_info(Index &n, Index &m, Index &nnz_jac_g,
 	// use C style indexing (0-based)
 	index_style = TNLP::C_STYLE;
 
+	// iteration count
+	mItr = 0;
+
 	return true;
 }
 
@@ -62,8 +65,8 @@ exoMod1D_Nlp::get_bounds_info(Index n, Number *x_l, Number *x_u,
 	{
 		for (Index j=0; j<mNloc; j++)
 		{
-			error(g_l[j+i*mNloc] = constraint(i, j) - 0.10*constraint(i, j), "constraint");
-			error(g_u[j+i*mNloc] = constraint(i, j) + 0.10*constraint(i, j), "constraint");
+			error(g_l[j+i*mNloc] = constraint(i, j) - 0.001*constraint(i, j), "constraint");
+			error(g_u[j+i*mNloc] = constraint(i, j) + 0.001*constraint(i, j), "constraint");
 		}
 	}
 	return true;
@@ -74,9 +77,20 @@ exoMod1D_Nlp::get_starting_point(Index n, bool init_x, Number* x,
 			  		   		     bool init_z, Number* z_L, Number* z_U,
 			        		   	 Index m, bool init_lambda, Number* lambda)
 {
-	std::copy(mMu.begin(), mMu.end(), x);
+	// sMu = vecPerturb(mMu, 0.1);
+	// sTheta = vecPerturb(mTheta, 0.1);
+	sMu = vecAvg(mMu);
+	sTheta = vecAvg(mTheta);
+	// std::vector<double> tmp(mMu.size(), 0.0);
+	// std::vector<double> tmp1(mTheta.size(), 0.0);
+	// sMu = tmp;
+	// sTheta = tmp1;
+	std::copy(sMu.begin(), sMu.end(), x);
 	std::copy(mLambda.begin(), mLambda.end(), x+mNloc);
-	std::copy(mTheta.begin(), mTheta.end(), x+2*mNloc);
+	std::copy(sTheta.begin(), sTheta.end(), x+2*mNloc);
+
+	writeParam(mMu, "./dump/mu_true.txt");
+	writeParam(mTheta, "./dump/theta_true.txt");
 	return true;
 }
 
@@ -92,6 +106,10 @@ exoMod1D_Nlp::eval_f(Index n, const Number* x, bool new_x, Number& obj_value)
 	obj_value += l2norm(model::calcBigR(mu, theta, mWinLength), mBigR);
 	obj_value += l2norm(model::calcBigS(mu, theta, mWinLength), mBigS);
 	obj_value += l2norm(model::calcBigT(theta, mWinLength), mBigT);
+
+	writeParam(mu, "./dump/mu_" + numToStr(mItr) + ".txt");
+	writeParam(theta, "./dump/theta_" + numToStr(mItr) + ".txt");
+	mItr++;
 	return true;
 }	
 
@@ -135,7 +153,7 @@ exoMod1D_Nlp::eval_jac_g(Index n, const Number* x, bool new_x,
 	if (values == NULL)
 	{
 		Index jInd = 0;
-		for (auto i=1; i<mNcon; i++)
+		for (auto i=0; i<mNcon; i++)
 		{
 			for (auto j=0; j<mNtyp; j++)
 			{
@@ -218,6 +236,52 @@ void exoMod1D_Nlp::finalize_solution(SolverReturn status,
 	{
 		std::cout << "g(" << i << ") = " << g[i] << std::endl;
 	}
+
+	std::vector<double> mu(x, x+mNloc);
+	std::vector<double> theta(x+2*mNloc, x+3*mNloc);
+
+	std::ofstream file;
+	file.open("true_mu.txt");
+	for (auto i=0; i<mMu.size(); i++)
+	{
+		file << mMu[i] << "\n";
+	}
+	file.close();
+
+	file.open("start_mu.txt");
+	for (auto i=0; i<sMu.size(); i++)
+	{
+		file << sMu[i] << "\n";
+	}
+	file.close();
+
+	file.open("solution_mu.txt");
+	for (auto i=0; i<mu.size(); i++)
+	{
+		file << mu[i] << "\n";
+	}
+	file.close();
+
+	file.open("true_theta.txt");
+	for (auto i=0; i<mTheta.size(); i++)
+	{
+		file << mTheta[i] << "\n";
+	}
+	file.close();
+
+	file.open("start_theta.txt");
+	for (auto i=0; i<sTheta.size(); i++)
+	{
+		file << sTheta[i] << "\n";
+	}
+	file.close();
+
+	file.open("solution_theta.txt");
+	for (auto i=0; i<theta.size(); i++)
+	{
+		file << theta[i] << "\n";
+	}
+	file.close();
 }
 
 void exoMod1D_Nlp::initFromExodus(exodusFile &exo)
@@ -283,7 +347,7 @@ exoMod1D_Nlp::lowerBound(const int &i)
 {
 	if (i == 0)
 	{
-		return 0;
+		return 10;
 	}
 	else if (i == 1)
 	{
@@ -304,7 +368,7 @@ exoMod1D_Nlp::upperBound(const int &i)
 {
 	if (i == 0)
 	{
-		return 15;
+		return 20;
 	}
 	else if (i == 1)
 	{
@@ -463,6 +527,18 @@ exoMod1D_Nlp::calcConstraintDeriv(const std::vector<double> &mu,
 		exit(0);
 	}
 	return -1;
+}
+
+void
+exoMod1D_Nlp::writeParam(const std::vector<double> &par, const std::string fname)
+{
+	std::ofstream file;
+	file.open(fname);
+	for (auto i=0; i<par.size(); i++)
+	{
+		file << par[i] << "\n";
+	}
+	file.close();
 }
 
 void
