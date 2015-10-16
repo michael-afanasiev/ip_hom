@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 import os
-import sys
 import re
+import sys
+import time
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -16,12 +17,14 @@ fig = plt.figure(1)
 ax = fig.add_subplot(111)
 ax.set_xlim([0,243])
     
+true = typ + "_true.txt"
+    
 plt.ion()
 plt.show()
 ax.set_autoscale_on(False)
 for file in os.listdir('./'):
 
-    if not file.startswith(typ):
+    if not file.startswith(typ + "_0"):
         continue
 
     if typ == "mu":
@@ -32,8 +35,10 @@ for file in os.listdir('./'):
         exit("UNKNOWN TYPE")
     
     itr = re.findall(r'\d+', file)
-    plt.title('Iteration: ' + itr[0])    
+    plt.title('Iteration: ' + itr[0])
     values = np.loadtxt(file)
+    trueVal = np.loadtxt(true)
     plt.plot(values)
+    plt.plot(trueVal)
     plt.draw()
-    plt.cla()
+    plt.cla()    

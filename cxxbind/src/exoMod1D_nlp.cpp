@@ -77,10 +77,12 @@ exoMod1D_Nlp::get_starting_point(Index n, bool init_x, Number* x,
 			  		   		     bool init_z, Number* z_L, Number* z_U,
 			        		   	 Index m, bool init_lambda, Number* lambda)
 {
+	sMu = mMu;
+	sTheta = mTheta;
 	// sMu = vecPerturb(mMu, 0.1);
 	// sTheta = vecPerturb(mTheta, 0.1);
-	sMu = vecAvg(mMu);
-	sTheta = vecAvg(mTheta);
+	// sMu = vecAvg(mMu);
+	// sTheta = vecAvg(mTheta);
 	// std::vector<double> tmp(mMu.size(), 0.0);
 	// std::vector<double> tmp1(mTheta.size(), 0.0);
 	// sMu = tmp;
@@ -101,14 +103,14 @@ exoMod1D_Nlp::eval_f(Index n, const Number* x, bool new_x, Number& obj_value)
 	std::vector<double> lambda(x+mNloc, x+2*mNloc);
 	std::vector<double> theta(x+2*mNloc, x+3*mNloc);
 	obj_value = 0;
-	// obj_value += l2norm(model::calcBigL(mu, mWinLength), mBigL);
-	obj_value += l2norm(model::calcBigM(mu, mWinLength), mBigM);
-	obj_value += l2norm(model::calcBigR(mu, theta, mWinLength), mBigR);
-	obj_value += l2norm(model::calcBigS(mu, theta, mWinLength), mBigS);
-	obj_value += l2norm(model::calcBigT(theta, mWinLength), mBigT);
+	obj_value += l2norm(model::calcBigL(mu, mWinLength), mBigL);
+	// obj_value += l2norm(model::calcBigM(mu, mWinLength), mBigM);
+	// obj_value += l2norm(model::calcBigR(mu, theta, mWinLength), mBigR);
+	// obj_value += l2norm(model::calcBigS(mu, theta, mWinLength), mBigS);
+	// obj_value += l2norm(model::calcBigT(theta, mWinLength), mBigT);
 
-	writeParam(mu, "./dump/mu_" + numToStr(mItr) + ".txt");
-	writeParam(theta, "./dump/theta_" + numToStr(mItr) + ".txt");
+	// writeParam(mu, "./dump/mu_" + numToStr(mItr) + ".txt");
+	// writeParam(theta, "./dump/theta_" + numToStr(mItr) + ".txt");
 	mItr++;
 	return true;
 }	
@@ -421,10 +423,11 @@ exoMod1D_Nlp::calcGrad(const std::vector<double> &mu,
 {	
 	if (var == 0)
 	{
+		double dLdM = model::dBigLdMu(mu, theta, mBigL, ind, mWinLength);
 		double dMdM = model::dBigMdMu(mu, theta, mBigM, ind, mWinLength);
 		double dRdM = model::dBigRdMu(mu, theta, mBigR, ind, mWinLength);
 		double dSdM = model::dBigSdMu(mu, theta, mBigS, ind, mWinLength);
-		return dSdM + dRdM + dMdM;
+		return dLdM;//dSdM + dRdM + dMdM;
 	}
 	else if (var == 1)
 	{

@@ -85,8 +85,11 @@ public:
 	static std::vector<double>
 	calcBigT(const std::vector<double> &theta, const int winLength);
 
-	static std::vector<double>
-	dBigLdMu(const std::vector<double> &mu, const std::vector<double> &theta,
+	static double
+	dBigLdMu(const std::vector<double> &mu,
+			 const std::vector<double> &theta,
+			 const std::vector<double> &bigM,
+			 const int &ind,
 			 const int &winLength);
 
 	static double

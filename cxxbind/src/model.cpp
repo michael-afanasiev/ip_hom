@@ -163,24 +163,36 @@ model::calcBigT(const std::vector<double> &theta, const int winLength)
 	return prep;
 }
 
-std::vector<double>
-model::dBigLdMu(const std::vector<double> &mu, 
-				const std::vector<double> &theta, const int &winLength)
+double 
+model::dBigLdMu(const std::vector<double> &mu,
+				const std::vector<double> &theta, 
+				const std::vector<double> &bigL,
+				const int &ind,
+				const int &winLength)
 {
+	double out = 0.0;
+	int half = winLength / 2;
 	std::vector<double> win(winLength, 1/float(winLength));
-	std::vector<double> res(mu.size());
-	std::vector<double> t0(mu.size());
-	std::vector<double> t1(mu.size());
-	for (auto i=0; i<t0.size(); i++)
+	std::vector<double> bigLtrial = calcBigL(mu, winLength);
+	std::vector<double> prep(mu.size());
+	for (auto i=0; i<prep.size(); i++)
 	{
-		t0[i] = 1 / mu[i];
-		t1[i] = 1 / (mu[i]*mu[i]);
+		prep[i] = 1 / mu[i];
 	}
-	t0 = convolve(t0, win);
-	t1 = convolve(t1, win);
-	for (auto i=0; i<t0.size(); i++) t0[i] = 1 / (t0[i]*t0[i]);
-	for (auto i=0; i<t0.size(); i++) res[i] = t0[i] * t1[i];
-	return res;
+	prep = convolve(prep, win);
+	for (auto i=0; i<prep.size(); i++)
+	{
+		prep[i] = 1 / (prep[i]*prep[i]);
+	}
+	for (auto j=0; j<win.size(); j++)
+	{
+		int vecInd = ind + 1 + (j - half);
+		if (vecInd < 0) vecInd = 0;
+		if (vecInd >= mu.size()) vecInd = mu.size() - 1;
+		out += ((bigLtrial[vecInd] - bigL[vecInd]) * prep[vecInd] 
+			* (1 / (mu[vecInd]*mu[vecInd]))) * win[j];
+	}
+	return out;
 }
 
 double 
