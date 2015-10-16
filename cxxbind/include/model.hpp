@@ -27,7 +27,7 @@ public:
 
 	static double
 	dLdMu(const std::vector<double> &mu, const std::vector<double> &theta,
-		  const int &ind);
+	      const int &ind, const int &winLength);
 
 	static double
 	dMdMu(const std::vector<double> &mu, const std::vector<double> &theta,

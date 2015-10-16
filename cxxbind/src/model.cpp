@@ -322,11 +322,25 @@ model::dBigTdTheta(const std::vector<double> &mu,
 	return out;
 }
 
-double
-model::dLdMu(const std::vector<double> &mu, const std::vector<double> &theta,
-			 const int &ind)
+double 
+model::dLdMu(const std::vector<double> &mu,
+			 const std::vector<double> &theta, 
+			 const int &ind,
+			 const int &winLength)
 {
-	return (1 / ((1 / mu[ind])*(1 / mu[ind]))) * (1 / (mu[ind]*mu[ind]));
+	int half = winLength / 2;
+	double sum = 0.0;
+	std::vector<double> win(winLength, 1/double(winLength));
+	std::vector<double> prep(winLength);
+	for (auto j=0; j<prep.size(); j++)
+	{
+		int vecInd = ind + 1 + (j - half);
+		if (vecInd < 0) vecInd = 0;
+		if (vecInd >= mu.size()) vecInd = mu.size() - 1;
+		sum += 1 / mu[vecInd] * win[j];
+	}
+	sum = 1 / (sum * sum);
+	return sum * 1 / (mu[ind]*mu[ind]);
 }
 
 double
