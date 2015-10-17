@@ -166,6 +166,7 @@ vecPerturb(const std::vector<T> &vec, const double maxP)
 		if ((rand() / double(RAND_MAX)) > 0.5) sign = -1;
 		double prt = rand() / double(RAND_MAX);
 		out[i] = vec[i] + sign * prt * maxP;
+		if (out[i] < 0) out[i] = vec[i];
 	}
 	return out;
 }

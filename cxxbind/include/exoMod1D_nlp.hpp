@@ -78,6 +78,8 @@ private:
 	int mWinLength;				// window length of convolution
 	int mNjacNonZero;			// number of non-zero in jacobian
 
+	double mObjSave;
+
 	std::vector<int> mJcol;
 	std::vector<int> mIrow;
 
@@ -95,6 +97,9 @@ private:
 	std::vector<double> mRho;
 	std::vector<double> mTheta;
 	std::vector<double> mLambda;
+
+	std::vector<double> mBestMu;
+	std::vector<double> mBestTheta;
 
 	std::vector<double> mBigL;	
 	std::vector<double> mBigM;

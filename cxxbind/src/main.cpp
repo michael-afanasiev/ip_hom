@@ -25,6 +25,7 @@ int main(int argc, char const *argv[])
 	// app->Options()->SetStringValue("mu_strategy", "monotone");
 	app->Options()->SetStringValue("output_file", "ipopt.out");
 	app->Options()->SetStringValue("hessian_approximation", "limited-memory");
+	app->Options()->SetIntegerValue("max_iter", 500);
 	// app->Options()->SetNumericValue("derivative_test_perturbation", 1e-10);
 	// app->Options()->SetStringValue("derivative_test", "first-order");
 	// app->Options()->SetNumericValue("point_perturbation_radius", 1e-5);

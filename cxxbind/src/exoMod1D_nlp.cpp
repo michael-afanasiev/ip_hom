@@ -65,8 +65,8 @@ exoMod1D_Nlp::get_bounds_info(Index n, Number *x_l, Number *x_u,
 	{
 		for (Index j=0; j<mNloc; j++)
 		{
-			error(g_l[j+i*mNloc] = constraint(i, j) - 0.001*constraint(i, j), "constraint");
-			error(g_u[j+i*mNloc] = constraint(i, j) + 0.001*constraint(i, j), "constraint");
+			error(g_l[j+i*mNloc] = constraint(i, j) - 0.00000001*constraint(i, j), "constraint");
+			error(g_u[j+i*mNloc] = constraint(i, j) + 0.00000001*constraint(i, j), "constraint");
 		}
 	}
 	return true;
@@ -81,12 +81,12 @@ exoMod1D_Nlp::get_starting_point(Index n, bool init_x, Number* x,
 	// sTheta = mTheta;
 	// sMu = vecPerturb(mMu, 0.1);
 	// sTheta = vecPerturb(mTheta, 0.1);
-	sMu = vecAvg(mMu);
-	sTheta = vecAvg(mTheta);
-	// std::vector<double> tmp(mMu.size(), 0.0);
-	// std::vector<double> tmp1(mTheta.size(), 0.0);
-	// sMu = tmp;
-	// sTheta = tmp1;
+	// sMu = vecAvg(mMu);
+	// sTheta = vecAvg(mTheta);
+	std::vector<double> tmp(mMu.size(), 0.0);
+	std::vector<double> tmp1(mTheta.size(), 0.0);
+	sMu = tmp;
+	sTheta = tmp1;
 	std::copy(sMu.begin(), sMu.end(), x);
 	std::copy(mLambda.begin(), mLambda.end(), x+mNloc);
 	std::copy(sTheta.begin(), sTheta.end(), x+2*mNloc);
@@ -114,8 +114,15 @@ exoMod1D_Nlp::eval_f(Index n, const Number* x, bool new_x, Number& obj_value)
 	// obj_value += l2norm(model::calcBigS(mu, theta, mWinLength), mBigS);
 	// obj_value += l2norm(model::calcBigT(theta, mWinLength), mBigT);
 
-	// writeParam(mu, "./dump/mu_" + numToStr(mItr) + ".txt");
-	// writeParam(theta, "./dump/theta_" + numToStr(mItr) + ".txt");
+	if (obj_value < mObjSave)
+	{
+		mBestMu = mu;
+		mBestTheta = theta;
+		mObjSave = obj_value;
+	}
+
+	writeParam(mu, "./dump/mu_" + numToStr(mItr) + ".txt");
+	writeParam(theta, "./dump/theta_" + numToStr(mItr) + ".txt");
 	mItr++;
 	return true;
 }	
@@ -289,6 +296,9 @@ void exoMod1D_Nlp::finalize_solution(SolverReturn status,
 		file << theta[i] << "\n";
 	}
 	file.close();
+
+	writeParam(mBestMu, "best_mu.txt");
+	writeParam(mBestTheta, "best_theta.txt");
 }
 
 void exoMod1D_Nlp::initFromExodus(exodusFile &exo)
@@ -331,14 +341,21 @@ void exoMod1D_Nlp::initFromExodus(exodusFile &exo)
 	mLambda = getVectorSubset(mLambda, nCtr, nCtr+nWrap);
 
 	// calc backus parameters
-	int winLength = 100;
+	int winLength = 20;
 	mBigL = model::calcBigL(mMu, winLength);
 	mBigM = model::calcBigM(mMu, winLength);
 	mBigR = model::calcBigR(mMu, mTheta, winLength);
 	mBigS = model::calcBigS(mMu, mTheta, winLength);
 	mBigT = model::calcBigT(mTheta, winLength);
 
+	// mBigL = vecPerturb(mBigL, 0.05);
+	// mBigM = vecPerturb(mBigM, 0.05);
+	// mBigR = vecPerturb(mBigR, 0.05);
+	// mBigS = vecPerturb(mBigS, 0.05);
+	// mBigT = vecPerturb(mBigT, 0.05);
+
 	// save some variables
+	mObjSave = 10000.0;
 	mNtyp = 3;
 	mNcon = 5;
 	mNloc = nWrap;
@@ -354,7 +371,7 @@ exoMod1D_Nlp::lowerBound(const int &i)
 {
 	if (i == 0)
 	{
-		return 10;
+		return 0;
 	}
 	else if (i == 1)
 	{
@@ -375,7 +392,7 @@ exoMod1D_Nlp::upperBound(const int &i)
 {
 	if (i == 0)
 	{
-		return 20;
+		return 60;
 	}
 	else if (i == 1)
 	{
