@@ -183,6 +183,20 @@ vecAvg(const std::vector<T> &vec)
 	return out;
 }
 
+// template <typename T> auto
+// vecAvgWin(const std::vector<T> &vec, const int &length)
+// {
+// 	std::vector<T> out(vec.size());
+// 	for (auto i=0; i<vec.size(); i++)
+// 	{
+// 		double avg = 0;
+// 		for (auto j=0; j<length, j++)
+// 		{
+			
+// 		}
+// 	}
+// }
+
 template <typename T> auto
 numToStr(T num)
 {

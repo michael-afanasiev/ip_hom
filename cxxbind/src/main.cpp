@@ -20,7 +20,7 @@ int main(int argc, char const *argv[])
 
 	SmartPtr<IpoptApplication> app = IpoptApplicationFactory();
 	app->RethrowNonIpoptException(true);
-	app->Options()->SetNumericValue("tol", 1e-4);
+	app->Options()->SetNumericValue("tol", 1e-2);
 	app->Options()->SetStringValue("mu_strategy", "adaptive");
 	// app->Options()->SetStringValue("mu_strategy", "monotone");
 	app->Options()->SetStringValue("output_file", "ipopt.out");

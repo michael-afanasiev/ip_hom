@@ -91,6 +91,11 @@ exoMod1D_Nlp::get_starting_point(Index n, bool init_x, Number* x,
 	std::copy(mLambda.begin(), mLambda.end(), x+mNloc);
 	std::copy(sTheta.begin(), sTheta.end(), x+2*mNloc);
 
+	writeParam(mBigL, "./bigL.txt");
+	writeParam(mBigM, "./bigM.txt");
+	writeParam(mBigS, "./bigS.txt");
+	writeParam(mBigR, "./bigR.txt");
+	writeParam(mBigT, "./bigT.txt");
 	writeParam(mMu, "./dump/mu_true.txt");
 	writeParam(mTheta, "./dump/theta_true.txt");
 	return true;
@@ -103,11 +108,11 @@ exoMod1D_Nlp::eval_f(Index n, const Number* x, bool new_x, Number& obj_value)
 	std::vector<double> lambda(x+mNloc, x+2*mNloc);
 	std::vector<double> theta(x+2*mNloc, x+3*mNloc);
 	obj_value = 0;
-	obj_value += l2norm(model::calcBigL(mu, mWinLength), mBigL);
-	obj_value += l2norm(model::calcBigM(mu, mWinLength), mBigM);
-	obj_value += l2norm(model::calcBigR(mu, theta, mWinLength), mBigR);
-	obj_value += l2norm(model::calcBigS(mu, theta, mWinLength), mBigS);
-	obj_value += l2norm(model::calcBigT(theta, mWinLength), mBigT);
+	// obj_value += l2norm(model::calcBigL(mu, mWinLength), mBigL);
+	// obj_value += l2norm(model::calcBigM(mu, mWinLength), mBigM);
+	// obj_value += l2norm(model::calcBigR(mu, theta, mWinLength), mBigR);
+	// obj_value += l2norm(model::calcBigS(mu, theta, mWinLength), mBigS);
+	// obj_value += l2norm(model::calcBigT(theta, mWinLength), mBigT);
 
 	// writeParam(mu, "./dump/mu_" + numToStr(mItr) + ".txt");
 	// writeParam(theta, "./dump/theta_" + numToStr(mItr) + ".txt");
@@ -125,7 +130,7 @@ exoMod1D_Nlp::eval_grad_f(Index n, const Number* x, bool new_x, Number* grad_f)
 	{
 		for (Index j=0; j<mNloc; j++)
 		{
-			grad_f[j+i*mNloc] = calcGrad(mu, lambda, theta, i, j);
+			grad_f[j+i*mNloc] = 0;//calcGrad(mu, lambda, theta, i, j);
 		}
 	}
 
